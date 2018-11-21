@@ -4,8 +4,10 @@ import click
 
 from services import TrelloClientService, UserStoryService
 
+ACTIONS = ['sync', 'update']
+
 @click.command()
-@click.option('--action', type=click.Choice(['sync', 'update']), help='action to execute')
+@click.option('--action', type=click.Choice(ACTIONS), help='action to execute')
 
 def main(action):
     switcher = {
