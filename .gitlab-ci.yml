@@ -1,0 +1,12 @@
+image: python:3.7
+
+cache:
+  paths:
+  - ~/.cache/pip/
+
+test:
+  before_script:
+  - pip install -r requirements.txt
+  script:
+  - python -m pytest tests/ --disable-warnings
+
