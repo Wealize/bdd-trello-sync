@@ -21,15 +21,15 @@ class UserStoryService():
         ]
 
         for card in cards:
-            if not self.is_user_story(card):
+            if not self.is_user_story(card['desc']):
                 continue
 
             else:
                 user_story = self.get_user_story(card)
                 self.save_user_story(user_story)
 
-    def is_user_story(self, card):
-        return self.SCENARIO_START in card['desc']
+    def is_user_story(self, description):
+        return self.SCENARIO_START in description
 
     def get_user_story(self, card):
         scenarios_start_index = card['desc'].find(self.SCENARIO_START) + len(self.SCENARIO_START)
