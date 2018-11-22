@@ -8,48 +8,91 @@ class TrelloClientService():
 
     def get_cards(self):
         res = requests.get(self.url)
+        res.raise_for_status()
         return res.json()
 
 
-class UserStoryService():
+class UserStoryParser():
     SCENARIO_START = '# Scenarios'
+    SCENARIO_SEPARATOR = '--'
 
-    def process_cards(self, cards):
-        cards = [
+    def get_cards_as_user_stories(self, cards: dict) -> list:
+        cards = self.get_relevant_card_info(cards)
+        user_story_cards = filter(
+            lambda card: self.is_user_story(card['desc']),
+            cards)
+
+        return map(
+            lambda card: self.get_user_story(card),
+            user_story_cards
+        )
+
+    def get_relevant_card_info(self, cards: list) -> dict:
+        return [
             dict(id=item['id'], desc=item['desc'], name=item['name'])
             for item in cards
         ]
 
-        for card in cards:
-            if not self.is_user_story(card['desc']):
-                continue
-
-            else:
-                user_story = self.get_user_story(card)
-                self.save_user_story(user_story)
-
-    def is_user_story(self, description):
+    def is_user_story(self, description: str) -> bool:
         return self.SCENARIO_START in description
 
-    def get_user_story(self, card):
-        scenarios_start_index = card['desc'].find(self.SCENARIO_START) + len(self.SCENARIO_START)
+    def get_user_story(self, card: dict) -> dict:
+        user_story = {
+            'feature': self.get_feature(card),
+            'scenarios': self.get_scenarios(card),
+            'tag': self.get_tag(card),
+            'description': self.get_description(card)
+        }
+        return user_story
 
-        print('Feature: {}\n'.format(card['name']))
-        print('  {}\n\n'.format(
-            card['desc'][:scenarios_start_index - len(self.SCENARIO_START)].strip()))
+    def get_feature(self, card: dict) -> str:
+        return card['name']
 
-        scenarios = card['desc'][scenarios_start_index:]
+    def get_description(self, card: dict) -> str:
+        description = ''
 
-        for scenario in scenarios.split('--'):
-            print('\n  @trello-{}'.format(card['id']))
+        try:
+            description = card['desc'].split(self.SCENARIO_START)[0].strip()
+        except IndexError:
+            # Empty
+            pass
 
-            for sentence in scenario.split('\n'):
-                new_sentence = sentence.strip()
+        return description
 
-                if not new_sentence:
-                    continue
+    def get_tag(self, card: dict) -> str:
+        return '@trello-{}'.format(card['id'])
 
-                print('  {}'.format(new_sentence))
+    def get_scenarios(self, card: dict) -> list:
+        scenarios = []
 
-    def save_user_story(self, card):
-        print('Saved!')
+        try:
+            card_scenarios = card['desc'].split(self.SCENARIO_START)[1].strip()
+        except IndexError:
+            card_scenarios = []
+
+        for card_scenario in card_scenarios.split(self.SCENARIO_SEPARATOR):
+            if not card_scenario.strip():
+                continue
+
+            scenarios.append(self.get_scenario(card_scenario))
+
+        return scenarios
+
+    def get_scenario(self, scenario_data):
+        scenario = []
+
+        for sentence in scenario_data.split('\n'):
+            new_sentence = sentence.strip()
+
+            if not new_sentence:
+                continue
+
+            scenario.append(new_sentence)
+
+        return scenario
+
+
+class PersistUserStoryService:
+    # TODO
+    def save(self, user_story):
+        raise NotImplementedError()
