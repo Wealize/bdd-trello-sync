@@ -18,9 +18,9 @@ class UserStoryParser():
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
         cards = self.get_relevant_card_info(cards)
-        user_story_cards = list(filter(
+        user_story_cards = filter(
             lambda card: self.is_user_story(card['desc']),
-            cards))
+            cards)
 
         return map(
             lambda card: self.get_user_story(card),
