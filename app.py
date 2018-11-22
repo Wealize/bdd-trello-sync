@@ -2,7 +2,7 @@ import os
 
 import click
 
-from services import TrelloClientService, UserStoryService
+from services import TrelloClientService, UserStoryParser
 
 ACTIONS = ['sync', 'update']
 
@@ -22,8 +22,11 @@ def sync():
     app_key = os.environ.get('TRELLO_APP_KEY')
     board = os.environ.get('TRELLO_BOARD')
     client_service = TrelloClientService(token, app_key, board)
-    user_story_service = UserStoryService()
-    cards = user_story_service.process_cards(client_service.get_cards())
+    parser = UserStoryParser()
+    cards = parser.get_cards_as_user_stories(client_service.get_cards())
+    # TODO Save data from the cards
+    for card in cards:
+        print(card)
 
 def update():
     print('TO DO update')
