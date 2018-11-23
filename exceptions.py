@@ -1,0 +1,2 @@
+class InvalidTrelloCardName(Exception):
+    pass

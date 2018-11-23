@@ -1,4 +1,8 @@
+import pytest
+
 from services import UserStoryParser
+from exceptions import InvalidTrelloCardName
+
 
 
 def test_is_user_story_return_false():
@@ -63,6 +67,55 @@ def test_get_feature():
     # TODO We need to change this once we have the filename implemented
     assert result == card['name']
 
+def test_get_filename():
+    card = {
+        'id': 'myid',
+        'name': '[users] My nice feature'
+    }
+
+    result = UserStoryParser().get_file_name(card)
+
+    # TODO We need to change this once we have the filename implemented
+    assert result == 'users'
+
+def test_get_filename_exception():
+    card = {
+        'id': 'myid',
+        'name': 'My nice feature'
+    }
+  
+    with pytest.raises(InvalidTrelloCardName):
+        UserStoryParser().get_file_name(card)
+
+
+def test_get_filename_empty():
+    card = {
+        'id': 'myid',
+        'name': ' [] My nice feature'
+    }
+  
+    with pytest.raises(InvalidTrelloCardName):
+        UserStoryParser().get_file_name(card)  
+        
+def test_get_filename_space():
+    card = {
+        'id': 'myid',
+        'name': ' [users] My nice feature'
+    }
+
+    result = UserStoryParser().get_file_name(card)
+
+    # TODO We need to change this once we have the filename implemented
+    assert result == 'users'  
+
+def test_get_filename_empty_brackets():
+    card = {
+        'id': 'myid',
+        'name': '[] My nice feature'
+    }
+  
+    with pytest.raises(InvalidTrelloCardName):
+        UserStoryParser().get_file_name(card)                  
 
 def test_get_tag():
     card = {

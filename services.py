@@ -1,5 +1,7 @@
 import requests
-
+import string
+from exceptions import InvalidTrelloCardName
+import re
 
 class TrelloClientService():
     def __init__(self, token, app_key, board):
@@ -91,6 +93,14 @@ class UserStoryParser():
             scenario.append(new_sentence)
 
         return scenario
+
+    def get_file_name(self, card: dict) -> str:
+        match = re.search(r'\[(\w+)\]', card['name'])
+        
+        if match:
+            return match.group(1)
+        else:
+            raise InvalidTrelloCardName()
 
 
 class PersistUserStoryService:
