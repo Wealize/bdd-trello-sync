@@ -49,6 +49,10 @@ class UserStoryParser():
         return user_story
 
     def get_feature(self, card: dict) -> str:
+        match = re.search(r'\[(\w+)\](.*)', card['name'])
+        
+        if match:
+            return match.group(2)
         return card['name']
 
     def get_description(self, card: dict) -> str:

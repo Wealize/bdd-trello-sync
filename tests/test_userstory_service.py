@@ -45,7 +45,7 @@ def test_is_user_story_return_true():
 def test_get_feature():
     card = {
         'id': 'myid',
-        'name': '[users] My nice feature',
+        'name': '[users]My nice feature',
         'desc': '''
             my little description
 
@@ -64,8 +64,8 @@ def test_get_feature():
 
     result = UserStoryParser().get_feature(card)
 
-    # TODO We need to change this once we have the filename implemented
-    assert result == card['name']
+
+    assert result == 'My nice feature'
 
 def test_get_filename():
     card = {
@@ -75,7 +75,6 @@ def test_get_filename():
 
     result = UserStoryParser().get_file_name(card)
 
-    # TODO We need to change this once we have the filename implemented
     assert result == 'users'
 
 def test_get_filename_exception():
@@ -105,7 +104,6 @@ def test_get_filename_space():
 
     result = UserStoryParser().get_file_name(card)
 
-    # TODO We need to change this once we have the filename implemented
     assert result == 'users'  
 
 def test_get_filename_empty_brackets():
@@ -164,7 +162,6 @@ def test_get_description_when_is_empty():
 
     result = UserStoryParser().get_description(card)
 
-    # TODO We need to change this once we have the filename implemented
     assert result == expected_result
 
 
