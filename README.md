@@ -14,3 +14,10 @@ pip install -r requirements.txt
 source .venv/bin/activate
 TRELLO_APP_KEY=... TRELLO_TOKEN=... TRELLO_BOARD=... python app.py
 ```
+
+## Test
+
+```bash
+source .venv/bin/activate
+python -m pytest tests/ --disable-warnings
+```

@@ -15,6 +15,7 @@ class TrelloClientService():
 class UserStoryParser():
     SCENARIO_START = '# Scenarios'
     SCENARIO_SEPARATOR = '--'
+    TRELLO_TAG_FORMAT = '@trello-{}'
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
         cards = self.get_relevant_card_info(cards)
@@ -60,7 +61,7 @@ class UserStoryParser():
         return description
 
     def get_tag(self, card: dict) -> str:
-        return '@trello-{}'.format(card['id'])
+        return self.TRELLO_TAG_FORMAT.format(card['id'])
 
     def get_scenarios(self, card: dict) -> list:
         scenarios = []
