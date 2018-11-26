@@ -114,17 +114,37 @@ class UserStoryParser():
 class PersistUserStoryService:
     def save(self, cards, output_path):
         for card in cards:
-            file_name = card['file_name'] + '.feature'
-            path = Path(output_path) / file_name
-            open(path, 'w')
-            f = open(path, 'a')
-            f.write('Feature: ' + card['feature']+'\n\n')
-            for scenarios in card['scenarios']:
-                f.write('Scenario: ' + card['feature']+'\n')
-                for scenario in scenarios:
-                    f.write(scenario+'\n')
-                f.write('\n')
-        f.close()
+            self.save_file(card, output_path)
 
+    def save_file(self, card, output_path):
+        filename = '{}.feature'.format(card['file_name'])
+        filepath = Path(output_path) / filename
 
+        with open(filepath, 'w') as file_tobe_saved:
+            file_content = self.generate_file_content(card)
+            file_tobe_saved.write(file_content)
 
+    def generate_file_content(self, card):
+        template = '''
+            Feature: {feature}
+
+            {description}
+
+            Scenario:
+{scenarios_formatted}
+
+        '''
+        scenarios_formatted = self.format_scenarios(card['scenarios'])
+
+        return template.format(**card, scenarios_formatted=scenarios_formatted)
+
+    def format_scenarios(self, scenarios):
+        SEPARATION_FORMAT = '\n{spaces}'.format(spaces=' ' * 14)
+        scenarios_formatted = ''
+
+        for scenario in scenarios:
+            scenarios_formatted += SEPARATION_FORMAT
+            scenarios_formatted += SEPARATION_FORMAT.join(scenario)
+            scenarios_formatted += '\n'
+
+        return scenarios_formatted
