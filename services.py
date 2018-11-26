@@ -2,6 +2,8 @@ import requests
 import string
 from exceptions import InvalidTrelloCardName
 import re
+from pathlib import Path
+
 
 class TrelloClientService():
     def __init__(self, token, app_key, board):
@@ -44,13 +46,14 @@ class UserStoryParser():
             'feature': self.get_feature(card),
             'scenarios': self.get_scenarios(card),
             'tag': self.get_tag(card),
-            'description': self.get_description(card)
+            'description': self.get_description(card),
+            'file_name': self.get_file_name(card)
         }
         return user_story
 
     def get_feature(self, card: dict) -> str:
         match = re.search(r'\[(\w+)\](.*)', card['name'])
-        
+
         if match:
             return match.group(2)
         return card['name']
@@ -99,8 +102,9 @@ class UserStoryParser():
         return scenario
 
     def get_file_name(self, card: dict) -> str:
+
         match = re.search(r'\[(\w+)\]', card['name'])
-        
+
         if match:
             return match.group(1)
         else:
@@ -108,6 +112,19 @@ class UserStoryParser():
 
 
 class PersistUserStoryService:
-    # TODO
-    def save(self, user_story):
-        raise NotImplementedError()
+    def save(self, cards, output_path):
+        for card in cards:
+            file_name = card['file_name'] + '.feature'
+            path = Path(output_path) / file_name
+            open(path, 'w')
+            f = open(path, 'a')
+            f.write('Feature: ' + card['feature']+'\n\n')
+            for scenarios in card['scenarios']:
+                f.write('Scenario: ' + card['feature']+'\n')
+                for scenario in scenarios:
+                    f.write(scenario+'\n')
+                f.write('\n')
+        f.close()
+
+
+
