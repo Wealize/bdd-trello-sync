@@ -2,6 +2,8 @@ import requests
 import string
 from exceptions import InvalidTrelloCardName
 import re
+from pathlib import Path
+
 
 class TrelloClientService():
     def __init__(self, token, app_key, board):
@@ -44,13 +46,14 @@ class UserStoryParser():
             'feature': self.get_feature(card),
             'scenarios': self.get_scenarios(card),
             'tag': self.get_tag(card),
-            'description': self.get_description(card)
+            'description': self.get_description(card),
+            'file_name': self.get_file_name(card)
         }
         return user_story
 
     def get_feature(self, card: dict) -> str:
         match = re.search(r'\[(\w+)\](.*)', card['name'])
-        
+
         if match:
             return match.group(2)
         return card['name']
@@ -99,8 +102,9 @@ class UserStoryParser():
         return scenario
 
     def get_file_name(self, card: dict) -> str:
+
         match = re.search(r'\[(\w+)\]', card['name'])
-        
+
         if match:
             return match.group(1)
         else:
@@ -108,6 +112,39 @@ class UserStoryParser():
 
 
 class PersistUserStoryService:
-    # TODO
-    def save(self, user_story):
-        raise NotImplementedError()
+    def save(self, cards, output_path):
+        for card in cards:
+            self.save_file(card, output_path)
+
+    def save_file(self, card, output_path):
+        filename = '{}.feature'.format(card['file_name'])
+        filepath = Path(output_path) / filename
+
+        with open(filepath, 'w') as file_tobe_saved:
+            file_content = self.generate_file_content(card)
+            file_tobe_saved.write(file_content)
+
+    def generate_file_content(self, card):
+        template = '''
+            Feature: {feature}
+
+            {description}
+
+            Scenario:
+{scenarios_formatted}
+
+        '''
+        scenarios_formatted = self.format_scenarios(card['scenarios'])
+
+        return template.format(**card, scenarios_formatted=scenarios_formatted)
+
+    def format_scenarios(self, scenarios):
+        SEPARATION_FORMAT = '\n{spaces}'.format(spaces=' ' * 14)
+        scenarios_formatted = ''
+
+        for scenario in scenarios:
+            scenarios_formatted += SEPARATION_FORMAT
+            scenarios_formatted += SEPARATION_FORMAT.join(scenario)
+            scenarios_formatted += '\n'
+
+        return scenarios_formatted
