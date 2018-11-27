@@ -1,14 +1,13 @@
-image: python:3.7
 
 stages:
-  - danger
-  - pytest
+  - test
 
 cache:
   paths:
   - ~/.cache/pip/
 
 danger:
+  stage: test
   image: ruby:2.2
   before_script:
   - bundle install
@@ -16,6 +15,8 @@ danger:
   - bundle exec danger
 
 pytest:
+  stage: test
+  image: python:3.7
   before_script:
   - pip install -r requirements.txt
   script:
