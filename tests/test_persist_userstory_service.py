@@ -65,3 +65,20 @@ def test_generate_file_content_when_no_receive_card_return_feature_formatted():
 
         with pytest.raises(KeyError):
                 persistservice.generate_file_content(card)
+
+@pytest.fixture
+def test_create_dir_when_directory_not_exists(tempfile):
+        persistservice = PersistUserStoryService()
+        directory = tempfile('feature')
+
+        result = persistservice.create_dir(directory)
+
+        assert result == 'feature'
+
+def test_create_dir_when_directory_exists(tmpdir):
+        persistservice = PersistUserStoryService()
+        directory = tmpdir.mkdir('feature')
+
+        result = persistservice.create_dir(directory)
+
+        assert result == None
