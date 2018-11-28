@@ -67,7 +67,7 @@ def test_generate_file_content_when_no_receive_card_return_feature_formatted():
                 persistservice.generate_file_content(card)
 
 @pytest.fixture
-def test_create_dir_when_directory_exists(tempfile):
+def test_create_dir_when_directory_not_exists(tempfile):
         persistservice = PersistUserStoryService()
         directory = tempfile('feature')
 
@@ -75,7 +75,7 @@ def test_create_dir_when_directory_exists(tempfile):
 
         assert result == 'feature'
 
-def test_create_dir_when_directory_not_exists(tmpdir):
+def test_create_dir_when_directory_exists(tmpdir):
         persistservice = PersistUserStoryService()
         directory = tmpdir.mkdir('feature')
 
