@@ -1,9 +1,12 @@
 import requests
 import string
 import os
-from exceptions import InvalidTrelloCardName
 import re
+
 from pathlib import Path
+
+from exceptions import InvalidTrelloCardName
+
 
 
 class TrelloClientService():
