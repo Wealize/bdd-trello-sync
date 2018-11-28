@@ -1,5 +1,6 @@
 import requests
 import string
+import os
 from exceptions import InvalidTrelloCardName
 import re
 from pathlib import Path
@@ -113,6 +114,7 @@ class UserStoryParser():
 
 class PersistUserStoryService:
     def save(self, cards, output_path):
+        self.create_dir(output_path)
         for card in cards:
             self.save_file(card, output_path)
 
@@ -123,6 +125,11 @@ class PersistUserStoryService:
         with open(filepath, 'w') as file_tobe_saved:
             file_content = self.generate_file_content(card)
             file_tobe_saved.write(file_content)
+
+    def create_dir(self, output_path):
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+            return output_path
 
     def generate_file_content(self, card):
         template = '''
