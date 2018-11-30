@@ -2,6 +2,8 @@ import requests
 import string
 import os
 import re
+from os import listdir
+from os.path import isfile, join
 
 from pathlib import Path
 
@@ -18,6 +20,55 @@ class TrelloClientService():
         res = requests.get(self.url)
         res.raise_for_status()
         return res.json()
+
+    def update_board(self, features):
+        # for f in features: updateCard(f)
+        print('')
+
+    def update_card(self, feature):
+        # put to Trello Api
+        print('')
+
+
+class TrelloCardSerializer():
+    def get_user_stories_as_cards(self, features_from_files):
+        return features_from_files
+
+    def get_feature_as_card(self, feature)-> dict:
+        card = {
+            'id': self.get_id(feature),
+            'name': self.get_name(feature),
+            'desc': self.get_desc(feature)
+        }
+        return card
+
+    def feature_to_array(self, feature):
+        return list(filter(None, feature.split("\n")))
+
+    def get_id(self, feature):
+        if self.description_exists(feature):
+            return feature[3].split('-')[1]
+        return feature[2].split('-')[1]
+
+    def get_file_name(self, feature):
+        file_name = feature[0].split('.')[0]
+        return '[{}]'.format(file_name)
+
+    def get_name(self, feature):
+        item_feature = feature[1].split(':')[1].strip()
+        name = "{} {}".format(self.get_file_name(feature), item_feature)
+        return name
+
+    def description_exists(self, feature):
+        if re.match(r'\@trello-([0-9a-z]+)', feature[2].strip()) == None:
+            return True
+        return False
+
+    def get_desc(self, feature):
+        SCENARIO_START = '# Scenarios'
+        SCENARIO_SEPARATOR = '--'
+
+
 
 
 class UserStoryParser():
@@ -134,13 +185,23 @@ class PersistUserStoryService:
             os.makedirs(output_path)
             return output_path
 
+    def get_features_from_files(self, output_path):
+        files = [f for f in listdir(output_path) if isfile(join(output_path, f))]
+        features = []
+
+        for f in files:
+            with open( Path(output_path) / f, 'r') as file_tobe_read:
+                features.append(f + ':' + str(file_tobe_read.read()))
+        return features
+
     def generate_file_content(self, card):
         template = '''
             Feature: {feature}
 
             {description}
 
-            Scenario:
+            {tag}
+
 {scenarios_formatted}
 
         '''
@@ -153,6 +214,7 @@ class PersistUserStoryService:
         scenarios_formatted = ''
 
         for scenario in scenarios:
+            scenarios_formatted += SEPARATION_FORMAT + 'Scenario:\n'
             scenarios_formatted += SEPARATION_FORMAT
             scenarios_formatted += SEPARATION_FORMAT.join(scenario)
             scenarios_formatted += '\n'

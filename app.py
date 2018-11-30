@@ -3,8 +3,7 @@ import os
 import click
 from dotenv import load_dotenv
 
-from services import TrelloClientService, UserStoryParser, PersistUserStoryService
-
+from services import TrelloClientService, UserStoryParser, PersistUserStoryService, TrelloCardSerializer
 APP_ROOT = os.path.join(os.path.dirname(__file__), '.')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
@@ -31,7 +30,10 @@ def sync_from_trello_to_behave(client_service, path):
 
 def sync_from_behave_to_trello(client_service, path):
     # TODO
-    print(path)
+    persist_service= PersistUserStoryService()
+    features_from_files = persist_service.get_features_from_files(path)
+    serializer = TrelloCardSerializer()
+    print(serializer.get_id(serializer.feature_to_array(features_from_files[0])))
 
 if __name__ == '__main__':
     main()
