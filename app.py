@@ -22,6 +22,7 @@ def main(board, path, push):
     else:
         sync_from_trello_to_behave(client_service, path)
 
+
 def sync_from_trello_to_behave(client_service, path):
     parser = UserStoryParser()
     cards = parser.get_cards_as_user_stories(client_service.get_cards())
@@ -33,7 +34,8 @@ def sync_from_behave_to_trello(client_service, path):
     persist_service= PersistUserStoryService()
     features_from_files = persist_service.get_features_from_files(path)
     serializer = TrelloCardSerializer()
-    print(serializer.get_id(serializer.feature_to_array(features_from_files[0])))
+    for card in serializer.get_user_stories_as_cards(features_from_files):
+        print(card)
 
 if __name__ == '__main__':
     main()

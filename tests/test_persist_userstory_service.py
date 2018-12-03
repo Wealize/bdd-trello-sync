@@ -3,10 +3,12 @@ import pytest
 from services import PersistUserStoryService
 
 
-def test_format_scenarios_when_receive_scenarios_return_scenarios_fromatted():
+def test_format_scenarios_when_receive_scenarios_return_scenarios_formatted():
         persistservice = PersistUserStoryService()
         scenarios = [['aaa', 'bbb']]
         scenarios_formatted = '''
+              Scenario:
+
               aaa
               bbb
 '''
@@ -46,7 +48,10 @@ def test_generate_file_content_when_receive_card_return_feature_formatted():
 
             Small description of the feature
 
-            Scenario:
+            @trello-5bf52341087e6a847a624604
+
+
+              Scenario:
 
               Given I love candy
               when someone gives me candy

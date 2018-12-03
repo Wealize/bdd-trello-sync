@@ -32,9 +32,13 @@ class TrelloClientService():
 
 class TrelloCardSerializer():
     def get_user_stories_as_cards(self, features_from_files):
-        return features_from_files
+        return map(
+            lambda card: self.get_feature_as_card(card),
+            features_from_files
+        )
 
     def get_feature_as_card(self, feature)-> dict:
+        feature = self.feature_to_array(feature)
         card = {
             'id': self.get_id(feature),
             'name': self.get_name(feature),
@@ -65,10 +69,21 @@ class TrelloCardSerializer():
         return False
 
     def get_desc(self, feature):
-        SCENARIO_START = '# Scenarios'
+        SCENARIO_START = '\n\n# Scenarios\n'
         SCENARIO_SEPARATOR = '--'
+        init_index = 4
+        desc = ''
 
+        if self.description_exists(feature):
+            desc += feature[2].strip()
+            init_index = 5
 
+        desc += SCENARIO_START
+
+        for index in range(init_index, len(feature)):
+            desc += "{} {}".format(feature[index].strip(), '\n')
+
+        return desc.replace('Scenario:', SCENARIO_SEPARATOR)
 
 
 class UserStoryParser():
