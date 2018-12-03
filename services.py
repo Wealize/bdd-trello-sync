@@ -21,16 +21,10 @@ class TrelloClientService():
         res.raise_for_status()
         return res.json()
 
-    def update_board(self, features):
-        # for f in features: updateCard(f)
-        print('')
-
-    def update_card(self, feature):
-        # put to Trello Api
-        print('')
-
 
 class TrelloCardSerializer():
+    TAG_REGEXP = r'\@trello-([0-9a-z]+)'
+
     def get_user_stories_as_cards(self, features_from_files):
         return map(
             lambda card: self.get_feature_as_card(card),
@@ -47,12 +41,13 @@ class TrelloCardSerializer():
         return card
 
     def feature_to_array(self, feature):
-        return list(filter(None, feature.split("\n")))
+        return [feature for feature in feature.split("\n") if feature.strip()]
 
     def get_id(self, feature):
+        index = 2
         if self.description_exists(feature):
-            return feature[3].split('-')[1]
-        return feature[2].split('-')[1]
+            index = 3
+        return feature[index].split('-')[1]
 
     def get_file_name(self, feature):
         file_name = feature[0].split('.')[0]
@@ -64,7 +59,7 @@ class TrelloCardSerializer():
         return name
 
     def description_exists(self, feature):
-        if re.match(r'\@trello-([0-9a-z]+)', feature[2].strip()) == None:
+        if not re.match(self.TAG_REGEXP, feature[2].strip()):
             return True
         return False
 
@@ -191,9 +186,9 @@ class PersistUserStoryService:
         filename = '{}.feature'.format(card['file_name'])
         filepath = Path(output_path) / filename
 
-        with open(filepath, 'w') as file_tobe_saved:
+        with open(filepath, 'w') as file_to_be_saved:
             file_content = self.generate_file_content(card)
-            file_tobe_saved.write(file_content)
+            file_to_be_saved.write(file_content)
 
     def create_dir(self, output_path):
         if not os.path.exists(output_path):
@@ -201,12 +196,12 @@ class PersistUserStoryService:
             return output_path
 
     def get_features_from_files(self, output_path):
-        files = [f for f in listdir(output_path) if isfile(join(output_path, f))]
+        files = [file for file in listdir(output_path) if isfile(join(output_path, file))]
         features = []
 
-        for f in files:
-            with open( Path(output_path) / f, 'r') as file_tobe_read:
-                features.append(f + ':' + str(file_tobe_read.read()))
+        for file in files:
+            with open( Path(output_path) / file, 'r') as file_tobe_read:
+                features.append(file + ':' + str(file_tobe_read.read()))
         return features
 
     def generate_file_content(self, card):
