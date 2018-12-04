@@ -13,7 +13,6 @@ load_dotenv(dotenv_path)
 @click.option('--path', required=True, help='output path')
 @click.option('--push', is_flag=True, help='push from Behave to Trello. Without this option pull Trello to Behave')
 
-
 def main(board, path, push):
     token = os.getenv('TRELLO_TOKEN')
     app_key = os.getenv('TRELLO_APP_KEY')
@@ -33,6 +32,7 @@ def sync_from_trello_to_behave(client_service, path):
 
 def sync_from_behave_to_trello(client_service, path):
     # TODO
+    pass
 
 if __name__ == '__main__':
     main()
