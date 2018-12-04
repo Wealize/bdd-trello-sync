@@ -178,7 +178,7 @@ class UserStoryParser():
             raise InvalidTrelloCardName()
 
     def parse_date_string(self, string_date: str) -> str:
-        if string_date is None:
+        if not string_date:
             return "No tag"
 
         return string_date[:10]
