@@ -87,3 +87,4 @@ def test_create_dir_when_directory_exists(tmpdir):
         result = persistservice.create_dir(directory)
 
         assert result == None
+

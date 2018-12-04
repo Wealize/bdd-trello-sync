@@ -10,7 +10,6 @@ from pathlib import Path
 from exceptions import InvalidTrelloCardName
 
 
-
 class TrelloClientService():
     def __init__(self, token, app_key, board):
         self.url = 'https://api.trello.com/1/boards/{board}/cards?key={app_key}&token={token}'.format(
@@ -27,51 +26,54 @@ class TrelloCardSerializer():
 
     def get_user_stories_as_cards(self, features_from_files):
         return map(
-            lambda card: self.get_feature_as_card(card),
-            features_from_files
+            lambda key, value: self.get_feature_as_card(key, value),
+            features_from_files.keys(), features_from_files.values()
         )
 
-    def get_feature_as_card(self, feature)-> dict:
-        feature = self.feature_to_array(feature)
+    def get_feature_as_card(self, key, item)-> dict:
         card = {
-            'id': self.get_id(feature),
-            'name': self.get_name(feature),
-            'desc': self.get_desc(feature)
+            'id': self.get_id(item),
+            'name': self.get_name(key, item),
+            'desc': self.get_desc(item)
         }
         return card
 
     def feature_to_array(self, feature):
         return [feature for feature in feature.split("\n") if feature.strip()]
 
-    def get_id(self, feature):
-        index = 2
+    def get_id(self, item):
+        feature = self.feature_to_array(item)
+        index = 1
         if self.description_exists(feature):
-            index = 3
-        return feature[index].split('-')[1]
+            index = 2
+        return feature[index].strip().split('-')[1]
 
-    def get_file_name(self, feature):
+    def get_file_name(self, key):
+        feature = self.feature_to_array(key)
         file_name = feature[0].split('.')[0]
         return '[{}]'.format(file_name)
 
-    def get_name(self, feature):
-        item_feature = feature[1].split(':')[1].strip()
-        name = "{} {}".format(self.get_file_name(feature), item_feature)
+    def get_name(self, key, item):
+        feature = self.feature_to_array(item)
+        item_feature = feature[0].split(':')[1].strip()
+        name = "{} {}".format(self.get_file_name(key), item_feature)
         return name
 
     def description_exists(self, feature):
-        if not re.match(self.TAG_REGEXP, feature[2].strip()):
+        if not re.match(self.TAG_REGEXP, feature[1].strip()):
             return True
         return False
 
-    def get_desc(self, feature):
+    def get_desc(self, item):
+        feature = self.feature_to_array(item)
         SCENARIO_START = '\n\n# Scenarios\n'
         SCENARIO_SEPARATOR = '--'
-        init_index = 4
+        init_index = 3
         desc = ''
 
         if self.description_exists(feature):
-            desc += feature[2].strip()
-            init_index = 5
+            desc += feature[1].strip()
+            init_index = 4
 
         desc += SCENARIO_START
 
@@ -196,12 +198,13 @@ class PersistUserStoryService:
             return output_path
 
     def get_features_from_files(self, output_path):
-        files = [file for file in listdir(output_path) if isfile(join(output_path, file))]
-        features = []
+        files = [file for file in listdir(output_path) if isfile(join(
+            output_path, file))]
+        features = {}
 
         for file in files:
-            with open( Path(output_path) / file, 'r') as file_tobe_read:
-                features.append(file + ':' + str(file_tobe_read.read()))
+            with open(Path(output_path) / file, 'r') as file_to_be_read:
+                features[file] = file_to_be_read.read()
         return features
 
     def generate_file_content(self, card):
