@@ -86,7 +86,7 @@ class TrelloCardSerializer():
 class UserStoryParser():
     SCENARIO_START = '# Scenarios'
     SCENARIO_SEPARATOR = '--'
-    TRELLO_TAG_FORMAT = '@trello-{}'
+    TRELLO_TAG_FORMAT = '@{}'
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
         cards = self.get_relevant_card_info(cards)
@@ -101,7 +101,7 @@ class UserStoryParser():
 
     def get_relevant_card_info(self, cards: list) -> dict:
         return [
-            dict(id=item['id'], desc=item['desc'], name=item['name'])
+            dict(id=item['id'], desc=item['desc'], name=item['name'], due=self.parse_date_string(item['due']))
             for item in cards
         ]
 
@@ -137,7 +137,7 @@ class UserStoryParser():
         return description
 
     def get_tag(self, card: dict) -> str:
-        return self.TRELLO_TAG_FORMAT.format(card['id'])
+        return self.TRELLO_TAG_FORMAT.format(card['due'])
 
     def get_scenarios(self, card: dict) -> list:
         scenarios = []
@@ -177,6 +177,11 @@ class UserStoryParser():
         else:
             raise InvalidTrelloCardName()
 
+    def parse_date_string(self, string_date: str) -> str:
+        if string_date is None:
+            return "No tag"
+
+        return string_date[:10]
 
 class PersistUserStoryService:
     def save(self, cards, output_path):
