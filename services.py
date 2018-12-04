@@ -2,11 +2,12 @@ import requests
 import string
 import os
 import re
+from os import listdir
+from os.path import isfile, join
 
 from pathlib import Path
 
 from exceptions import InvalidTrelloCardName
-
 
 
 class TrelloClientService():
@@ -18,6 +19,68 @@ class TrelloClientService():
         res = requests.get(self.url)
         res.raise_for_status()
         return res.json()
+
+
+class TrelloCardSerializer():
+    TAG_REGEXP = r'\@trello-([0-9a-z]+)'
+
+    def get_user_stories_as_cards(self, features_from_files):
+        return map(
+            lambda key, value: self.get_feature_as_card(key, value),
+            features_from_files.keys(), features_from_files.values()
+        )
+
+    def get_feature_as_card(self, key, item)-> dict:
+        card = {
+            'id': self.get_id(item),
+            'name': self.get_name(key, item),
+            'desc': self.get_desc(item)
+        }
+        return card
+
+    def feature_to_array(self, feature):
+        return [feature for feature in feature.split("\n") if feature.strip()]
+
+    def get_id(self, item):
+        feature = self.feature_to_array(item)
+        index = 1
+        if self.description_exists(feature):
+            index = 2
+        return feature[index].strip().split('-')[1]
+
+    def get_file_name(self, key):
+        feature = self.feature_to_array(key)
+        file_name = feature[0].split('.')[0]
+        return file_name
+
+    def get_name(self, key, item):
+        feature = self.feature_to_array(item)
+        item_feature = feature[0].split(':')[1].strip()
+        name = "[{}] {}".format(self.get_file_name(key), item_feature)
+        return name
+
+    def description_exists(self, feature):
+        if not re.match(self.TAG_REGEXP, feature[1].strip()):
+            return True
+        return False
+
+    def get_desc(self, item):
+        feature = self.feature_to_array(item)
+        SCENARIO_START = '\n\n# Scenarios\n'
+        SCENARIO_SEPARATOR = '--'
+        init_index = 3
+        desc = ''
+
+        if self.description_exists(feature):
+            desc += feature[1].strip()
+            init_index = 4
+
+        desc += SCENARIO_START
+
+        for index in range(init_index, len(feature)):
+            desc += "{} {}".format(feature[index].strip(), '\n')
+
+        return desc.replace('Scenario:', SCENARIO_SEPARATOR)
 
 
 class UserStoryParser():
@@ -125,14 +188,24 @@ class PersistUserStoryService:
         filename = '{}.feature'.format(card['file_name'])
         filepath = Path(output_path) / filename
 
-        with open(filepath, 'w') as file_tobe_saved:
+        with open(filepath, 'w') as file_to_be_saved:
             file_content = self.generate_file_content(card)
-            file_tobe_saved.write(file_content)
+            file_to_be_saved.write(file_content)
 
     def create_dir(self, output_path):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
             return output_path
+
+    def get_features_from_files(self, output_path):
+        files = [file for file in listdir(output_path) if isfile(join(
+            output_path, file))]
+        features = {}
+
+        for file in files:
+            with open(Path(output_path) / file, 'r') as file_to_be_read:
+                features[file] = file_to_be_read.read()
+        return features
 
     def generate_file_content(self, card):
         template = '''
@@ -140,7 +213,8 @@ class PersistUserStoryService:
 
             {description}
 
-            Scenario:
+            {tag}
+
 {scenarios_formatted}
 
         '''
@@ -153,6 +227,7 @@ class PersistUserStoryService:
         scenarios_formatted = ''
 
         for scenario in scenarios:
+            scenarios_formatted += SEPARATION_FORMAT + 'Scenario:\n'
             scenarios_formatted += SEPARATION_FORMAT
             scenarios_formatted += SEPARATION_FORMAT.join(scenario)
             scenarios_formatted += '\n'
