@@ -51,12 +51,12 @@ class TrelloCardSerializer():
     def get_file_name(self, key):
         feature = self.feature_to_array(key)
         file_name = feature[0].split('.')[0]
-        return '[{}]'.format(file_name)
+        return file_name
 
     def get_name(self, key, item):
         feature = self.feature_to_array(item)
         item_feature = feature[0].split(':')[1].strip()
-        name = "{} {}".format(self.get_file_name(key), item_feature)
+        name = "[{}] {}".format(self.get_file_name(key), item_feature)
         return name
 
     def description_exists(self, feature):

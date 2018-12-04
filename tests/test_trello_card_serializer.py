@@ -26,7 +26,7 @@ def test_get_id_when_params_is_empty():
 def test_get_file_name_when_receive_params():
     key = 'candy.feature'
     serializer = TrelloCardSerializer()
-    expected_result = '[candy]'
+    expected_result = 'candy'
 
     result = serializer.get_file_name(key)
 
