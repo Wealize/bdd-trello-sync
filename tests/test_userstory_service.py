@@ -133,12 +133,13 @@ def test_get_tag():
             Given I love candy
             when someone gives my candy
             then i say thank you
-        '''
+        ''',
+        'due': '2018-12-04'
     }
 
     result = UserStoryParser().get_tag(card)
 
-    assert result == '@trello-{id}'.format(id=card['id'])
+    assert result == '@{due}'.format(due=card['due'])
 
 
 def test_get_description_when_is_empty():
