@@ -116,7 +116,32 @@ def test_get_filename_empty_brackets():
     with pytest.raises(InvalidTrelloCardName):
         UserStoryParser().get_file_name(card)
 
-def test_get_tag():
+def test_get_tag_only_return_trello_tag():
+    card = {
+        'id': 'myid',
+        'name': '[users] My nice feature',
+        'desc': '''
+            my little description
+
+            # Scenarios
+            Given i like to boogie
+            When someone plays boogie
+            Then i start dancing
+
+            --
+
+            Given I love candy
+            when someone gives my candy
+            then i say thank you
+        ''',
+        'due': ''
+    }
+
+    result = UserStoryParser().get_tags(card)
+
+    assert '@trello-{id}'.format(id=card['id']) in result
+
+def test_get_tag_return_all_tags():
     card = {
         'id': 'myid',
         'name': '[users] My nice feature',
@@ -137,10 +162,9 @@ def test_get_tag():
         'due': '2018-12-04'
     }
 
-    result = UserStoryParser().get_tag(card)
+    result = UserStoryParser().get_tags(card)
 
-    assert result == '@{due}'.format(due=card['due'])
-
+    assert '@trello-{id}'.format(id=card['id']) in result and '@release-{due}'.format(due=card['due']) in result
 
 def test_get_description_when_is_empty():
     expected_result = ''
