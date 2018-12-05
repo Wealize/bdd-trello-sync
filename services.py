@@ -19,13 +19,13 @@ class TrelloClientService():
         return self.perform_request('GET', url, self.credentials)
 
     def update_card(self, card_id, data):
-        url = self.generate_url('cards', card_id, '')
+        url = self.generate_url('cards', card_id)
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
-    def generate_url(self, resource, id, item=None):
+    def generate_url(self, resource, id, item=''):
         return "https://api.trello.com/1/{resource}/{id}/{item}".format(
-            resource=resource, item=item, id=id)
+                resource=resource, item=item, id=id)
 
     def perform_request(self, method, url, params):
         res = requests.request(method, url, params=params)
