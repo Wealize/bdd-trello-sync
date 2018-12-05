@@ -11,12 +11,23 @@ from exceptions import InvalidTrelloCardName
 
 
 class TrelloClientService():
-    def __init__(self, token, app_key, board):
-        self.url = 'https://api.trello.com/1/boards/{board}/cards?key={app_key}&token={token}'.format(
-            board=board, app_key=app_key, token=token)
+    def __init__(self, token, app_key):
+        self.credentials = {"key": app_key, "token": token}
 
-    def get_cards(self):
-        res = requests.get(self.url)
+    def generate_url(self, resource, id, item):
+        return "https://api.trello.com/1/{resource}/{id}/{item}".format(
+            resource=resource, item=item, id=id)
+
+    def get_cards(self, board_id):
+        url = self.generate_url('boards', board_id, 'cards')
+        res = requests.get(url, params=self.credentials)
+        res.raise_for_status()
+        return res.json()
+
+    def update_card(self, card_id, data):
+        url = self.generate_url('cards', card_id, '')
+        data.update(self.credentials)
+        res = requests.request('PUT', url, params=data)
         res.raise_for_status()
         return res.json()
 
@@ -90,7 +101,6 @@ class UserStoryParser():
     RELEASE_TAG_FORMAT = '@release-{}'
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
-        cards = self.get_relevant_card_info(cards)
         user_story_cards = filter(
             lambda card: self.is_user_story(card['desc']),
             cards)
