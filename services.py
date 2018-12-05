@@ -23,7 +23,7 @@ class TrelloClientService():
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
-    def generate_url(self, resource, id, item):
+    def generate_url(self, resource, id, item=None):
         return "https://api.trello.com/1/{resource}/{id}/{item}".format(
             resource=resource, item=item, id=id)
 
