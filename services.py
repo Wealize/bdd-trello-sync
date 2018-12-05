@@ -18,18 +18,19 @@ class TrelloClientService():
         return "https://api.trello.com/1/{resource}/{id}/{item}".format(
             resource=resource, item=item, id=id)
 
-    def get_cards(self, board_id):
-        url = self.generate_url('boards', board_id, 'cards')
-        res = requests.get(url, params=self.credentials)
+    def perform_request(self, method, url, params):
+        res = requests.request(method, url, params=params)
         res.raise_for_status()
         return res.json()
+
+    def get_cards(self, board_id):
+        url = self.generate_url('boards', board_id, 'cards')
+        return self.perform_request('GET', url, self.credentials)
 
     def update_card(self, card_id, data):
         url = self.generate_url('cards', card_id, '')
         data.update(self.credentials)
-        res = requests.request('PUT', url, params=data)
-        res.raise_for_status()
-        return res.json()
+        return self.perform_request('PUT', url, data)
 
 
 class TrelloCardSerializer():
