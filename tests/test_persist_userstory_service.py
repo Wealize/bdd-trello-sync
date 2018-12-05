@@ -27,7 +27,7 @@ def test_format_scenarios_when_no_receive_scenarios_return_empty_string():
         assert result == ''
 
 
-def test_generate_file_content_when_receive_card_return_feature_formatted():
+def test_generate_file_content_when_receive_card_without_release_tag_return_feature_formatted():
         persistservice = PersistUserStoryService()
         card = {
         'feature':
@@ -38,7 +38,7 @@ def test_generate_file_content_when_receive_card_return_feature_formatted():
                                 'when someone gives me candy'
                         ]
                 ],
-                'tag': '@trello-5bf52341087e6a847a624604',
+                'tags': ['@trello-5bf52341087e6a847a624604'],
                 'description': 'Small description of the feature',
                 'file_name': 'users'
         }
@@ -47,6 +47,7 @@ def test_generate_file_content_when_receive_card_return_feature_formatted():
             Feature: My little description
 
             Small description of the feature
+
 
             @trello-5bf52341087e6a847a624604
 
@@ -63,6 +64,43 @@ def test_generate_file_content_when_receive_card_return_feature_formatted():
 
         assert result == expected_result
 
+def test_generate_file_content_when_receive_card_with_release_tag_return_feature_formatted():
+        persistservice = PersistUserStoryService()
+        card = {
+        'feature':
+                'My little description',
+                'scenarios': [
+                        [
+                                'Given I love candy',
+                                'when someone gives me candy'
+                        ]
+                ],
+                'tags': ['@trello-5bf52341087e6a847a624604', '@release-2018-12-04'],
+                'description': 'Small description of the feature',
+                'file_name': 'users'
+        }
+
+        expected_result = '''
+            Feature: My little description
+
+            Small description of the feature
+
+
+            @trello-5bf52341087e6a847a624604
+            @release-2018-12-04
+
+
+              Scenario:
+
+              Given I love candy
+              when someone gives me candy
+
+
+        '''
+
+        result = persistservice.generate_file_content(card)
+
+        assert result == expected_result
 
 def test_generate_file_content_when_no_receive_card_return_feature_formatted():
         persistservice = PersistUserStoryService()

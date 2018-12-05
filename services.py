@@ -87,6 +87,7 @@ class UserStoryParser():
     SCENARIO_START = '# Scenarios'
     SCENARIO_SEPARATOR = '--'
     TRELLO_TAG_FORMAT = '@trello-{}'
+    RELEASE_TAG_FORMAT = '@release-{}'
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
         cards = self.get_relevant_card_info(cards)
@@ -101,7 +102,7 @@ class UserStoryParser():
 
     def get_relevant_card_info(self, cards: list) -> dict:
         return [
-            dict(id=item['id'], desc=item['desc'], name=item['name'])
+            dict(id=item['id'], desc=item['desc'], name=item['name'], due=self.parse_date_string(item['due']))
             for item in cards
         ]
 
@@ -112,7 +113,7 @@ class UserStoryParser():
         user_story = {
             'feature': self.get_feature(card),
             'scenarios': self.get_scenarios(card),
-            'tag': self.get_tag(card),
+            'tags': self.get_tags(card),
             'description': self.get_description(card),
             'file_name': self.get_file_name(card)
         }
@@ -136,8 +137,14 @@ class UserStoryParser():
 
         return description
 
-    def get_tag(self, card: dict) -> str:
-        return self.TRELLO_TAG_FORMAT.format(card['id'])
+    def get_tags(self, card: dict) -> list:
+        tags = []
+        tags.append(self.TRELLO_TAG_FORMAT.format(card['id']))
+
+        if card['due']:
+            tags.append(self.RELEASE_TAG_FORMAT.format(card['due']))
+
+        return tags
 
     def get_scenarios(self, card: dict) -> list:
         scenarios = []
@@ -177,6 +184,11 @@ class UserStoryParser():
         else:
             raise InvalidTrelloCardName()
 
+    def parse_date_string(self, string_date: str) -> str:
+        if not string_date:
+            return None
+
+        return string_date[:10]
 
 class PersistUserStoryService:
     def save(self, cards, output_path):
@@ -213,14 +225,15 @@ class PersistUserStoryService:
 
             {description}
 
-            {tag}
+{tags_formatted}
 
 {scenarios_formatted}
 
         '''
         scenarios_formatted = self.format_scenarios(card['scenarios'])
+        tags_formatted = self.format_tags(card['tags'])
 
-        return template.format(**card, scenarios_formatted=scenarios_formatted)
+        return template.format(**card, tags_formatted=tags_formatted, scenarios_formatted=scenarios_formatted)
 
     def format_scenarios(self, scenarios):
         SEPARATION_FORMAT = '\n{spaces}'.format(spaces=' ' * 14)
@@ -233,3 +246,12 @@ class PersistUserStoryService:
             scenarios_formatted += '\n'
 
         return scenarios_formatted
+
+    def format_tags(self, tags):
+        TAG_SEPARATION_FORMAT = '\n{spaces}'.format(spaces=' ' * 12)
+        tags_formatted = ''
+
+        for tag in tags:
+            tags_formatted += TAG_SEPARATION_FORMAT + tag
+
+        return tags_formatted
