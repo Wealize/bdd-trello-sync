@@ -23,6 +23,14 @@ class TrelloClientService():
     def __init__(self, token, app_key):
         self.credentials = {"key": app_key, "token": token}
 
+    def get_id_first_list(self, board_id):
+        # To create a new card, we need the list id, we will use the first.
+        return self.get_lists(board_id)[0]['id']
+
+    def get_lists(self, board_id):
+        url = self.generate_url('boards', board_id, 'lists')
+        return self.perform_request('GET', url, self.credentials)
+
     def get_cards(self, board_id):
         url = self.generate_url('boards', board_id, 'cards')
         return self.perform_request('GET', url, self.credentials)
@@ -32,8 +40,18 @@ class TrelloClientService():
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
+<<<<<<< HEAD
     def generate_url(self, resource, id, item=''):
         return self.BASE_URL.format(
+=======
+    def create_card(self, data):
+        url = self.generate_url('cards')
+        data.update(self.credentials)
+        return self.perform_request('POST', url, data)
+
+    def generate_url(self, resource, id='', item=''):
+        return "https://api.trello.com/1/{resource}/{id}/{item}".format(
+>>>>>>> push from behave to Trello
                 resource=resource, item=item, id=id)
 
     def perform_request(self, method, url, params):
@@ -67,7 +85,10 @@ class TrelloCardSerializer():
         index = 1
         if self.description_exists(feature):
             index = 2
-        return feature[index].strip().split('-')[1]
+        item = feature[index].strip()
+        if not re.match(self.TAG_REGEXP, item):
+            return None
+        return item.split('-')[1]
 
     def get_file_name(self, key):
         feature = self.feature_to_array(key)
