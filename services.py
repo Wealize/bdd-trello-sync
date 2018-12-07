@@ -10,7 +10,16 @@ from pathlib import Path
 from exceptions import InvalidTrelloCardName
 
 
+class TrelloCardType:
+    TAG_ID_REGEX = r'\@trello-([0-9a-z]+)'
+    TAG_ID_FORMAT = '@trello-{}'
+    TAG_RELEASE_FORMAT = '@release-{}'
+    SCENARIO_SEPARATOR = '\n\n'
+
+
 class TrelloClientService():
+    BASE_URL = "https://api.trello.com/1/{resource}/{id}/{item}"
+
     def __init__(self, token, app_key):
         self.credentials = {"key": app_key, "token": token}
 
@@ -24,7 +33,7 @@ class TrelloClientService():
         return self.perform_request('PUT', url, data)
 
     def generate_url(self, resource, id, item=''):
-        return "https://api.trello.com/1/{resource}/{id}/{item}".format(
+        return self.BASE_URL.format(
                 resource=resource, item=item, id=id)
 
     def perform_request(self, method, url, params):
@@ -34,7 +43,7 @@ class TrelloClientService():
 
 
 class TrelloCardSerializer():
-    TAG_REGEXP = r'\@trello-([0-9a-z]+)'
+    SCENARIO_START = '\n\n# Scenarios\n'
 
     def get_user_stories_as_cards(self, features_from_files):
         return map(
@@ -72,14 +81,12 @@ class TrelloCardSerializer():
         return name
 
     def description_exists(self, feature):
-        if not re.match(self.TAG_REGEXP, feature[1].strip()):
+        if not re.match(TrelloCardType.TAG_ID_REGEX, feature[1].strip()):
             return True
         return False
 
     def get_desc(self, item):
         feature = self.feature_to_array(item)
-        SCENARIO_START = '\n\n# Scenarios\n'
-        SCENARIO_SEPARATOR = '--'
         init_index = 3
         desc = ''
 
@@ -87,19 +94,16 @@ class TrelloCardSerializer():
             desc += feature[1].strip()
             init_index = 4
 
-        desc += SCENARIO_START
+        desc += self.SCENARIO_START
 
         for index in range(init_index, len(feature)):
             desc += "{} {}".format(feature[index].strip(), '\n')
 
-        return desc.replace('Scenario:', SCENARIO_SEPARATOR)
+        return desc.replace('Scenario:', TrelloCardType.SCENARIO_SEPARATOR)
 
 
 class UserStoryParser():
     SCENARIO_START = '# Scenarios'
-    SCENARIO_SEPARATOR = '--'
-    TRELLO_TAG_FORMAT = '@trello-{}'
-    RELEASE_TAG_FORMAT = '@release-{}'
 
     def get_cards_as_user_stories(self, cards: dict) -> list:
         user_story_cards = filter(
@@ -113,7 +117,10 @@ class UserStoryParser():
 
     def get_relevant_card_info(self, cards: list) -> dict:
         return [
-            dict(id=item['id'], desc=item['desc'], name=item['name'], due=self.parse_date_string(item['due']))
+            dict(id=item['id'],
+                 desc=item['desc'],
+                 name=item['name'],
+                 due=self.parse_date_string(item['due']))
             for item in cards
         ]
 
@@ -150,10 +157,10 @@ class UserStoryParser():
 
     def get_tags(self, card: dict) -> list:
         tags = []
-        tags.append(self.TRELLO_TAG_FORMAT.format(card['id']))
+        tags.append(TrelloCardType.TAG_ID_FORMAT.format(card['id']))
 
         if card['due']:
-            tags.append(self.RELEASE_TAG_FORMAT.format(card['due']))
+            tags.append(TrelloCardType.TAG_RELEASE_FORMAT.format(card['due']))
 
         return tags
 
@@ -165,7 +172,9 @@ class UserStoryParser():
         except IndexError:
             card_scenarios = []
 
-        for card_scenario in card_scenarios.split(self.SCENARIO_SEPARATOR):
+        for card_scenario in card_scenarios.split(
+            TrelloCardType.SCENARIO_SEPARATOR
+        ):
             if not card_scenario.strip():
                 continue
 
@@ -200,6 +209,7 @@ class UserStoryParser():
             return None
 
         return string_date[:10]
+
 
 class PersistUserStoryService:
     def save(self, cards, output_path):
@@ -244,7 +254,10 @@ class PersistUserStoryService:
         scenarios_formatted = self.format_scenarios(card['scenarios'])
         tags_formatted = self.format_tags(card['tags'])
 
-        return template.format(**card, tags_formatted=tags_formatted, scenarios_formatted=scenarios_formatted)
+        return template.format(
+            **card,
+            tags_formatted=tags_formatted,
+            scenarios_formatted=scenarios_formatted)
 
     def format_scenarios(self, scenarios):
         SEPARATION_FORMAT = '\n{spaces}'.format(spaces=' ' * 14)
