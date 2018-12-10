@@ -41,11 +41,19 @@ def sync_from_behave_to_trello(client_service, path, board):
     for card in cards:
         push_card(card, id_list, client_service)
 
-
 def push_card(card, id_list, client_service):
     data = {key: value for key, value in card.items() if
             key in VALID_TRELLO_CARD_KEYS}
     card_id = card.get('id', None)
+    if not card_id:
+        data.update({"idList": id_list})
+        client_service.create_card(data)
+    else:
+        client_service.update_card(card_id, data)
+
+def push_card(card, id_list, client_service):
+    data = {'name': card.get('name'), 'desc': card.get('desc')}
+    card_id = card.get('id')
     if not card_id:
         data.update({"idList": id_list})
         client_service.create_card(data)
