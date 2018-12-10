@@ -11,8 +11,6 @@ def test_is_user_story_return_false():
         When someone plays boogie
         Then i start dancing
 
-        --
-
         Given I love candy
         when someone gives my candy
         then i say thank you
@@ -29,8 +27,6 @@ def test_is_user_story_return_true():
         Given i like to boogie
         When someone plays boogie
         Then i start dancing
-
-        --
 
         Given I love candy
         when someone gives my candy
@@ -54,8 +50,6 @@ def test_get_feature():
             When someone plays boogie
             Then i start dancing
 
-            --
-
             Given I love candy
             when someone gives my candy
             then i say thank you
@@ -76,6 +70,7 @@ def test_get_filename():
     result = UserStoryParser().get_file_name(card)
 
     assert result == 'users'
+
 
 def test_get_filename_exception():
     card = {
@@ -107,6 +102,7 @@ def test_get_filename_space():
 
     assert result == 'users'
 
+
 def test_get_filename_empty_brackets():
     card = {
         'id': 'myid',
@@ -115,6 +111,7 @@ def test_get_filename_empty_brackets():
 
     with pytest.raises(InvalidTrelloCardName):
         UserStoryParser().get_file_name(card)
+
 
 def test_get_tag_only_return_trello_tag():
     card = {
@@ -128,8 +125,6 @@ def test_get_tag_only_return_trello_tag():
             When someone plays boogie
             Then i start dancing
 
-            --
-
             Given I love candy
             when someone gives my candy
             then i say thank you
@@ -140,6 +135,7 @@ def test_get_tag_only_return_trello_tag():
     result = UserStoryParser().get_tags(card)
 
     assert '@trello-{id}'.format(id=card['id']) in result
+
 
 def test_get_tag_return_all_tags():
     card = {
@@ -153,8 +149,6 @@ def test_get_tag_return_all_tags():
             When someone plays boogie
             Then i start dancing
 
-            --
-
             Given I love candy
             when someone gives my candy
             then i say thank you
@@ -165,6 +159,7 @@ def test_get_tag_return_all_tags():
     result = UserStoryParser().get_tags(card)
 
     assert '@trello-{id}'.format(id=card['id']) in result and '@release-{due}'.format(due=card['due']) in result
+
 
 def test_get_description_when_is_empty():
     expected_result = ''
@@ -177,8 +172,6 @@ def test_get_description_when_is_empty():
             Given i like to boogie
             When someone plays boogie
             Then i start dancing
-
-            --
 
             Given I love candy
             when someone gives my candy
@@ -203,8 +196,6 @@ def test_get_description_when_not_empty():
             Given i like to boogie
             When someone plays boogie
             Then i start dancing
-
-            --
 
             Given I love candy
             when someone gives my candy
@@ -288,8 +279,6 @@ def test_get_scenarios_when_more_than_one_scenario_present():
             When someone plays boogie
             Then i start dancing
 
-            --
-
             Given I love candy
             when someone gives my candy
             then i say thank you
@@ -331,6 +320,7 @@ def test_scenario_with_newlines():
     result = UserStoryParser().get_scenario(scenario)
 
     assert result == expected_result
+
 
 def test_scenario_with_no_newlines():
     expected_result = [
