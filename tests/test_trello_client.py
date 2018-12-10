@@ -1,4 +1,7 @@
+import os
+
 import pytest
+import responses
 
 from services import TrelloClientService
 

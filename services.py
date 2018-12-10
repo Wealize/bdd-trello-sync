@@ -6,6 +6,7 @@ from os import listdir
 from os.path import isfile, join
 
 from pathlib import Path
+from ratelimit import limits
 
 from exceptions import InvalidTrelloCardName
 
@@ -40,20 +41,16 @@ class TrelloClientService():
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
-<<<<<<< HEAD
-    def generate_url(self, resource, id, item=''):
-        return self.BASE_URL.format(
-=======
     def create_card(self, data):
         url = self.generate_url('cards')
         data.update(self.credentials)
         return self.perform_request('POST', url, data)
 
     def generate_url(self, resource, id='', item=''):
-        return "https://api.trello.com/1/{resource}/{id}/{item}".format(
->>>>>>> push from behave to Trello
+        return self.BASE_URL.format(
                 resource=resource, item=item, id=id)
 
+    @limits(calls=100, period=10)
     def perform_request(self, method, url, params):
         res = requests.request(method, url, params=params)
         res.raise_for_status()
@@ -82,13 +79,19 @@ class TrelloCardSerializer():
 
     def get_id(self, item):
         feature = self.feature_to_array(item)
+        item = self.get_id_item(feature)
+        if not re.match(TrelloCardType.TAG_ID_REGEX, item):
+            return None
+        return self.get_id_from_id_item(item)
+
+    def get_id_item(self, feature):
         index = 1
         if self.description_exists(feature):
             index = 2
-        item = feature[index].strip()
-        if not re.match(self.TAG_REGEXP, item):
-            return None
-        return item.split('-')[1]
+        return feature[index].strip()
+
+    def get_id_from_id_item(self, id_item):
+        return id_item.split('-')[1]
 
     def get_file_name(self, key):
         feature = self.feature_to_array(key)

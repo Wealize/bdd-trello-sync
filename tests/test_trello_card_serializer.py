@@ -139,6 +139,49 @@ def test_feature_to_array_when_param_is_empty():
     assert result == expected_result
 
 
+def test_get_id_from_id_item_when_receive_id_item():
+    item = '@trello-1234'
+    serializer = TrelloCardSerializer()
+
+    result = serializer.get_id_from_id_item(item)
+
+    assert result == '1234'
+
+
+def test_get_id_item_when_description_exits():
+    feature = ['Feature:  yeah', 'Small description of the feature', '@trello-1234']
+    serializer = TrelloCardSerializer()
+
+    result = serializer.get_id_item(feature)
+
+    assert result == '@trello-1234'
+
+
+def test_get_id_item_when_description_not_exits():
+    feature = ['Feature:  yeah', '@trello-1234']
+    serializer = TrelloCardSerializer()
+
+    result = serializer.get_id_item(feature)
+
+    assert result == '@trello-1234'
+
+
+def test_get_id_item_when_param_is_empty():
+    feature = []
+    serializer = TrelloCardSerializer()
+
+    with pytest.raises(IndexError):
+        serializer.get_id_item(feature)
+
+
+def test_get_id_from_id_item_when_not_receive_id_item():
+    item = ''
+    serializer = TrelloCardSerializer()
+
+    with pytest.raises(IndexError):
+        serializer.get_id_from_id_item(item)
+
+
 def test_get_feature_as_card_if_key_item_is_given():
     key = 'candy.feature'
     item = '''\nFeature:  example\n\nSmall description\n\n
