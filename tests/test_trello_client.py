@@ -29,6 +29,25 @@ def test_create_card_return_card():
 
     assert response == data
 
+@responses.activate
+def test_update_card_return_card():
+    host = 'https://api.trello.com/1/cards'
+    token = os.getenv('TRELLO_TOKEN')
+    app_key = os.getenv('TRELLO_APP_KEY')
+    id_card = '5bf52341087e6a847a624604'
+    data = {"name": "name", "desc": "desc"}
+    responses.add(
+        responses.PUT,
+        host,
+        json=data,
+        status=200)
+    trello_client_service = TrelloClientService(token, app_key)
+    querystring = {"name": "name"}
+
+    response = trello_client_service.update_card(id_card, querystring)
+
+    assert response == data
+
 
 def test_generate_url_when_receive_all_params():
     trello_client_service = TrelloClientService('', '')

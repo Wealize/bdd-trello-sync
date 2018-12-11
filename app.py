@@ -51,14 +51,5 @@ def push_card(card, id_list, client_service):
     else:
         client_service.update_card(card_id, data)
 
-def push_card(card, id_list, client_service):
-    data = {'name': card.get('name'), 'desc': card.get('desc')}
-    card_id = card.get('id')
-    if not card_id:
-        data.update({"idList": id_list})
-        client_service.create_card(data)
-    else:
-        client_service.update_card(card_id, data)
-
 if __name__ == '__main__':
     main()
