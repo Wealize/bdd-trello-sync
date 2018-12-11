@@ -6,6 +6,7 @@ from os import listdir
 from os.path import isfile, join
 
 from pathlib import Path
+from ratelimit import limits
 
 from exceptions import InvalidTrelloCardName
 
@@ -18,24 +19,46 @@ class TrelloCardType:
 
 
 class TrelloClientService():
-    BASE_URL = "https://api.trello.com/1/{resource}/{id}/{item}"
+    BASE_URL = "https://api.trello.com/1/"
 
     def __init__(self, token, app_key):
         self.credentials = {"key": app_key, "token": token}
+
+    def get_id_first_list(self, board_id):
+        # To create a new card, we need the list id, we will use the first.
+        return self.get_lists(board_id)[0]['id']
+
+    def get_lists(self, board_id):
+        url = self.generate_url('boards', board_id, 'lists')
+        return self.perform_request('GET', url, self.credentials)
 
     def get_cards(self, board_id):
         url = self.generate_url('boards', board_id, 'cards')
         return self.perform_request('GET', url, self.credentials)
 
     def update_card(self, card_id, data):
-        url = self.generate_url('cards', card_id)
+        url = self.generate_update_url('cards', card_id)
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
-    def generate_url(self, resource, id, item=''):
-        return self.BASE_URL.format(
+    def create_card(self, data):
+        url = self.generate_create_url('cards')
+        data.update(self.credentials)
+        return self.perform_request('POST', url, data)
+
+    def generate_create_url(self, resource):
+        return self.BASE_URL+"{resource}".format(
+                resource=resource)
+
+    def generate_url(self, resource, id='', item=''):
+        return self.BASE_URL+"{resource}/{id}/{item}".format(
                 resource=resource, item=item, id=id)
 
+    def generate_update_url(self, resource, id=''):
+        return self.BASE_URL+"{resource}/{id}".format(
+                resource=resource, id=id)
+
+    @limits(calls=100, period=10)
     def perform_request(self, method, url, params):
         res = requests.request(method, url, params=params)
         res.raise_for_status()
@@ -64,10 +87,19 @@ class TrelloCardSerializer():
 
     def get_id(self, item):
         feature = self.feature_to_array(item)
+        item = self.get_id_item(feature)
+        if not re.match(TrelloCardType.TAG_ID_REGEX, item):
+            return None
+        return self.get_id_from_id_item(item)
+
+    def get_id_item(self, feature):
         index = 1
         if self.description_exists(feature):
             index = 2
-        return feature[index].strip().split('-')[1]
+        return feature[index].strip()
+
+    def get_id_from_id_item(self, id_item):
+        return id_item.split('-')[1]
 
     def get_file_name(self, key):
         feature = self.feature_to_array(key)
