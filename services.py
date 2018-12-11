@@ -19,7 +19,7 @@ class TrelloCardType:
 
 
 class TrelloClientService():
-    BASE_URL = "https://api.trello.com/1/{resource}/{id}/{item}"
+    BASE_URL = "https://api.trello.com/1/"
 
     def __init__(self, token, app_key):
         self.credentials = {"key": app_key, "token": token}
@@ -37,18 +37,26 @@ class TrelloClientService():
         return self.perform_request('GET', url, self.credentials)
 
     def update_card(self, card_id, data):
-        url = self.generate_url('cards', card_id)
+        url = self.generate_update_url('cards', card_id)
         data.update(self.credentials)
         return self.perform_request('PUT', url, data)
 
     def create_card(self, data):
-        url = self.generate_url('cards')
+        url = self.generate_create_url('cards')
         data.update(self.credentials)
         return self.perform_request('POST', url, data)
 
+    def generate_create_url(self, resource):
+        return self.BASE_URL+"{resource}".format(
+                resource=resource)
+
     def generate_url(self, resource, id='', item=''):
-        return self.BASE_URL.format(
+        return self.BASE_URL+"{resource}/{id}/{item}".format(
                 resource=resource, item=item, id=id)
+
+    def generate_update_url(self, resource, id=''):
+        return self.BASE_URL+"{resource}/{id}".format(
+                resource=resource, id=id)
 
     @limits(calls=100, period=10)
     def perform_request(self, method, url, params):
