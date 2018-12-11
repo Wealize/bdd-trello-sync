@@ -14,9 +14,9 @@ load_dotenv(dotenv_path)
 @responses.activate
 def test_create_card_return_card():
     host = 'https://api.trello.com/1/cards'
-    token = os.getenv('TRELLO_TOKEN')
-    app_key = os.getenv('TRELLO_APP_KEY')
-    id_list = '5bf689a6269a8d758124b7d5'
+    token = 'token'
+    app_key = 'app_key'
+    id_list = 'myid'
     data = {"name": "name", "desc": "desc", "idList": id_list}
     responses.add(
         responses.POST,
