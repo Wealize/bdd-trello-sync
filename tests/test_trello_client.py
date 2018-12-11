@@ -10,6 +10,7 @@ APP_ROOT = os.path.join(os.path.dirname(__file__), '../')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
+
 @responses.activate
 def test_create_card_return_card():
     host = 'https://api.trello.com/1/cards'
@@ -29,22 +30,23 @@ def test_create_card_return_card():
 
     assert response == data
 
+
 @responses.activate
 def test_update_card_return_card():
-    host = 'https://api.trello.com/1/cards'
-    token = os.getenv('TRELLO_TOKEN')
-    app_key = os.getenv('TRELLO_APP_KEY')
-    id_card = '5bf52341087e6a847a624604'
+    url_generated = 'https://api.trello.com/1/cards/mycard?name=name&key=key&token=token'
+    token = 'token'
+    app_key = 'key'
+    card_id = 'mycard'
     data = {"name": "name", "desc": "desc"}
     responses.add(
         responses.PUT,
-        host,
+        url_generated,
         json=data,
         status=200)
-    trello_client_service = TrelloClientService(token, app_key)
     querystring = {"name": "name"}
+    trello_client_service = TrelloClientService(token, app_key)
 
-    response = trello_client_service.update_card(id_card, querystring)
+    response = trello_client_service.update_card(card_id, querystring)
 
     assert response == data
 
