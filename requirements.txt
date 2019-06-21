@@ -7,3 +7,6 @@ pylint
 pep8
 ratelimit
 responses
+pytest
+pytest-cov
+codacy-coverage

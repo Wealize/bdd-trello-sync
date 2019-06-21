@@ -8,5 +8,6 @@ test:
   before_script:
   - pip install -r requirements.txt
   script:
-  - python -m pytest tests/ --disable-warnings
+  - python -m pytest tests/ --cov=. --cov-report xml:coverage.xml --disable-warnings
+  - python-codacy-coverage -r coverage.xml
 
