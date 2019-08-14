@@ -1,5 +1,7 @@
 # bdd-trello-sync
 
+[![CircleCI](https://circleci.com/gh/TheNeonProject/bdd-trello-sync.svg?style=svg)](https://circleci.com/gh/TheNeonProject/bdd-trello-sync)
+
 ## Installation
 
 ```bash
